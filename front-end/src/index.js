@@ -1,15 +1,17 @@
+import './styles.css'
 import axios from 'axios'
+
+const FAKE_SERVER_ADDRESS = 'http://localhost:3001'
+let REQUEST_COUNTER = 0
 
 document.querySelector('#root').innerHTML = `
   <div>
-    <button id="fetch-data">Fetch Data</button>
+    <button id="get-data-axios">Get Data With Axios (XMLHTTPRequest)</button>
+    <button id="get-data-fetch">Get Data With fetch</button>
     <button id="display-fetch-data">Display Fetch Performance</button>
     <div id="fetch-performance-data"></div>
   </div>
 `;
-
-let clickCounter = 0
-const FAKE_SERVER_ADDRESS = 'http://localhost:3000'
 
 const formatTime = ms =>
   ms < 1000
@@ -20,9 +22,10 @@ const displayFetchPerformance = () => {
   const performanceEntries = performance.getEntriesByType('resource');
   const fetchEntries = performanceEntries
     .filter(({ initiatorType }) => ['fetch', 'xmlhttprequest'].includes(initiatorType))
-    .map(({ name, duration, requestStart, responseEnd, responseStart, responseStatus, startTime }) => {
+    .map(({ name, duration, requestStart, responseEnd, responseStart, responseStatus, startTime, initiatorType }) => {
       return {
         url: name,
+        requestAPI: initiatorType,
         status: responseStatus,
         timestampStart: new Date(performance.timeOrigin + startTime).toISOString(),
         timestampEnd: new Date(performance.timeOrigin + responseEnd).toISOString(),
@@ -45,8 +48,8 @@ const displayFetchPerformance = () => {
   document.getElementById('fetch-performance-data').innerHTML = table
 }
 
-const fetchRouteWithDealayWithAxios = requestId =>
-  axios.get(`${FAKE_SERVER_ADDRESS}/route-with-delay?counter=${requestId}`)
+const getRouteWithAxios = () =>
+  axios.get(`${FAKE_SERVER_ADDRESS}/route-with-delay?counter=${REQUEST_COUNTER++}`)
     .then(response => {
       return response.data
     })
@@ -54,25 +57,22 @@ const fetchRouteWithDealayWithAxios = requestId =>
       console.error('Error:', error)
     })
 
-const fetchRouteWithDelay = requestId => 
-  fetch(`${FAKE_SERVER_ADDRESS}/route-with-delay?counter=${requestId}`)
-  .then(response => {
-    return response.json()
-  })
-  .then(data => {
-    return data
-  })
-  .catch(error => {
-    console.error('Error:', error)
-  })
+const getRouteWithFetch = () => 
+  fetch(`${FAKE_SERVER_ADDRESS}/route-with-delay?counter=${REQUEST_COUNTER++}`)
+    .then(response => {
+      return response.json()
+    })
+    .then(data => {
+      return data
+    })
+    .catch(error => {
+      console.error('Error:', error)
+    })
 
-const fetchButton = document.querySelector('#fetch-data')
+const getWithAxiosButton = document.querySelector('#get-data-axios')
+const getWithFetchButton = document.querySelector('#get-data-fetch')
 const displayButton = document.querySelector('#display-fetch-data')
 
 displayButton.addEventListener('click', displayFetchPerformance)
-
-fetchButton.addEventListener('click', () => {
-  for (let requestCounter = 0; requestCounter < 10; requestCounter++) {
-    fetchRouteWithDealayWithAxios(`${clickCounter++}-${requestCounter}`)
-  }
-})
+getWithAxiosButton.addEventListener('click', getRouteWithAxios)
+getWithFetchButton.addEventListener('click', getRouteWithFetch)
