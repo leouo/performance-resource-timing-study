@@ -1,0 +1,17 @@
+{
+  "name": "performance-resource-timing-study",
+  "version": "1.0.0",
+  "description": "A repository to study the Performance Resource Timing API for tracking HTTP requests",
+  "scripts": {
+    "start": "npm-run-all --parallel start:front-end start:server",
+    "start:front-end": "npm start --workspace front-end",
+    "start:server": "npm start --workspace server"
+  },
+  "workspaces": [
+    "front-end",
+    "server"
+  ],
+  "devDependencies": {
+    "npm-run-all": "^4.1.5"
+  }
+}
